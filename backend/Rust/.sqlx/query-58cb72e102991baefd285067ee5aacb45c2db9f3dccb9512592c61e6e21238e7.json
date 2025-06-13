@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\n        INSERT INTO messages (parent_id, process_id, `type`, message, attachment_url)\n        VALUES (?, ?, ?, ?, ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "58cb72e102991baefd285067ee5aacb45c2db9f3dccb9512592c61e6e21238e7"
+}

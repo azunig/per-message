@@ -1,0 +1,98 @@
+# ####################
+# # Archivos Generales y de Sistema Operativo
+# ####################
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+
+# Ignorar archivos de entorno
+.env
+.env.*
+!.env.example
+
+# ####################
+# # Archivos de Entornos y Secretos
+# ####################
+# ¡La regla más importante! Ignora todos los archivos de entorno locales.
+.env
+.env.*
+!.env.example # Pero SÍ incluyas el archivo de ejemplo.
+
+# ####################
+# # Logs
+# ####################
+*.log
+logs/
+
+# ####################
+# # Python / FastAPI
+# ####################
+# El directorio del entorno virtual
+/backend/Python/venv/
+
+# Cache 
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Cache de testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ####################
+# # Laravel / PHP
+# ####################
+# Dependencias de Composer. Se instalan con `composer install`.
+/backend/Laravel/vendor/
+
+# Dependencias de Node.js. Se instalan con `npm install`.
+/backend/Laravel/node_modules/
+
+# Archivo de entorno de Laravel (ya cubierto por la regla general, pero es bueno ser explícito)
+/backend/Laravel/.env
+
+# Archivos de cache, logs, sesiones, etc. de Laravel
+/backend/Laravel/storage/framework/
+/backend/Laravel/storage/logs/
+/backend/Laravel/storage/app/public/ 
+
+# Archivos de compilación de assets (Vite)
+/backend/Laravel/public/build/
+/backend/Laravel/public/hot
+
+# Herramientas de desarrollo local
+/backend/Laravel/Homestead.yaml
+/backend/Laravel/Homestead.json
+/backend/Laravel/.vagrant/
+
+/backend/Laravel/bootstrap/cache/*.php
+!.gitignore
+/backend/Laravel/database/*.sqlite
+
+
+
+# ####################
+# # Rust / Actix Web
+# ####################
+# ¡La carpeta más importante a ignorar! Contiene todos los archivos compilados y puede ser ENORME.
+/backend/Rust/target/
+
+# Archivo de entorno de Rust
+/backend/Rust/.env
+
+# Notas del editor de código
+.idea/
+.vscode/
+# Excepción para permitir configuraciones de VSCode compartidas
+!/.vscode/settings.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
+!/.vscode/extensions.json
+
+
