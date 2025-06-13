@@ -96,3 +96,38 @@ htmlcov/
 !/.vscode/extensions.json
 
 
+# Archivos Generales y de Sistema Operativo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+!/.vscode/settings.json
+
+# Archivos de Entornos y Secretos
+# ¡NUNCA SUBIR ARCHIVOS .ENV!
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Python / FastAPI
+/backend/Python/venv/
+/backend/Python/__pycache__/
+/backend/Python/app/__pycache__/
+**/database.py
+# Laravel / PHP
+/backend/Laravel/vendor/
+/backend/Laravel/node_modules/
+/backend/Laravel/public/build/
+/backend/Laravel/public/hot
+/backend/Laravel/storage/framework/
+/backend/Laravel/storage/logs/
+/backend/Laravel/bootstrap/cache/
+/backend/Laravel/database/*.sqlite
+
+# Rust / Actix Web
+# ¡LA CARPETA MÁS IMPORTANTE A IGNORAR!
+/backend/Rust/target/
