@@ -1,5 +1,3 @@
-# schemas.py
-
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import List, Optional
@@ -8,16 +6,16 @@ from typing import List, Optional
 # --- Esquemas para el Usuario ---
 # ===================================================================
 
-# Esquema base con la información pública de un usuario
+# Esquema base usuario
 class UserBase(BaseModel):
     email: str
     name: Optional[str] = None
 
-# Esquema para crear un nuevo usuario (recibe la contraseña)
+# Esquema crea un nuevo usuario (contraseña)
 class UserCreate(UserBase):
     password: str
 
-# Esquema para devolver un usuario desde la API (SIN la contraseña)
+# Esquema devolver un usuario API (SIN contraseña)
 class User(UserBase):
     id: int
     
@@ -36,8 +34,10 @@ class MessageBase(BaseModel):
     type: str = 'comentario'
     attachment_url: Optional[str] = None
 
+
 class MessageCreate(MessageBase):
-    pass # No necesita campos adicionales
+    pass
+
 
 class Message(MessageBase):
     id: int
