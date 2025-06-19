@@ -1,8 +1,34 @@
+# schemas.py
+
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import List, Optional
 
-# --- Esquema base con los campos comunes ---
+# ===================================================================
+# --- Esquemas para el Usuario ---
+# ===================================================================
+
+# Esquema base con la información pública de un usuario
+class UserBase(BaseModel):
+    email: str
+    name: Optional[str] = None
+
+# Esquema para crear un nuevo usuario (recibe la contraseña)
+class UserCreate(UserBase):
+    password: str
+
+# Esquema para devolver un usuario desde la API (SIN la contraseña)
+class User(UserBase):
+    id: int
+    
+    # Configuración para que Pydantic pueda leer desde un modelo de SQLAlchemy
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ===================================================================
+# --- Esquemas para los Mensajes (Actualizados) ---
+# ===================================================================
+
 class MessageBase(BaseModel):
     message: str
     process_id: int
@@ -10,17 +36,33 @@ class MessageBase(BaseModel):
     type: str = 'comentario'
     attachment_url: Optional[str] = None
 
-# --- Esquema para la creación de un mensaje (lo que recibe la API) ---
 class MessageCreate(MessageBase):
-    pass
+    pass # No necesita campos adicionales
 
-# --- Esquema para la lectura (lo que devuelve la API) ---
-# Este es un esquema recursivo: un mensaje puede contener una lista de mensajes (sus hijos)
 class Message(MessageBase):
     id: int
     created_at: datetime
     is_deleted: bool
-    children: List['Message'] = [] # Lista para las respuestas
+    
+    # CAMBIO IMPORTANTE: Ahora incluimos la información del dueño del mensaje
+    user_id: int
+    owner: User # <-- Anidamos el esquema 'User' para devolver sus datos
+    
+    # La relación recursiva para los hijos se mantiene
+    children: List['Message'] = []
 
-    # Permite que Pydantic V2 trabaje con modelos de ORM
     model_config = ConfigDict(from_attributes=True)
+
+
+# ===================================================================
+# --- Esquemas para la Autenticación (JWT) ---
+# ===================================================================
+
+# Esquema para la respuesta del endpoint de login
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+# Esquema para los datos que guardamos dentro del propio token JWT
+class TokenData(BaseModel):
+    email: Optional[str] = None
