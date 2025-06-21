@@ -36,7 +36,8 @@ class MessageBase(BaseModel):
 
 
 class MessageCreate(MessageBase):
-    pass
+    message: str
+    process_id: int
 
 
 class Message(MessageBase):
@@ -52,6 +53,12 @@ class Message(MessageBase):
     children: List['Message'] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReplyCreate(BaseModel):
+    message: str
+    type: str = 'comentario'
+    attachment_url: Optional[str] = None
 
 
 # ===================================================================

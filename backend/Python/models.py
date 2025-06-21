@@ -23,12 +23,11 @@ class User(Base):
 class Message(Base):
     __tablename__ = "messages"
 
-    # CAMBIO 3: Usamos Integer para consistencia con la clave primaria de User
     id = Column(Integer, primary_key=True, index=True) 
     parent_id = Column(Integer, ForeignKey("messages.id"), nullable=True)
     process_id = Column(Integer, nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    type = Column(Enum('comentario', 'solicitud', 'pregunta', 'email'), nullable=False, name="message_type_enum")
+    type = Column(Enum('comentario', 'solicitud', 'pregunta', 'email', 'respuesta'), nullable=False)
     message = Column(Text, nullable=False)
     attachment_url = Column(String(2048), nullable=True)
     is_deleted = Column(Boolean, default=False)

@@ -1,6 +1,6 @@
 # auth.py
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -33,8 +33,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/py/token")
 # --- FUNCIONES AUXILIARES DE AUTENTICACIÓN ---
 
 # Función para verificar que una contraseña en texto plano coincide con su hash
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password, password):
+    return pwd_context.verify(plain_password, password)
 
 # Función para crear el hash de una contraseña nueva
 def get_password_hash(password):
@@ -56,8 +56,13 @@ def get_user(db: Session, email: str):
 
 # Esta es la dependencia principal de seguridad.
 # Se encargará de validar el token y devolver el usuario autenticado.
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+async def get_current_user(request: Request, token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     # Define la excepción que se lanzará si el token no es válido
+        # --- AÑADE ESTAS LÍNEAS PARA DEPURAR ---
+    #print("--- DEBUGGING AUTH ---")
+    #print("Cabeceras recibidas:", request.headers)
+    #print("Token extraído por FastAPI:", token)
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

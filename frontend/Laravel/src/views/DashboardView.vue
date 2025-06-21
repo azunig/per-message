@@ -20,156 +20,172 @@
     </v-navigation-drawer>
     
     <div class="main-content-area flex-grow-1">
-      <v-window v-model="tab" class="fill-height">
-        <v-window-item value="posts" class="fill-height d-flex justify-center align-center">
-            <h1 class="text-grey">Contenido de Posts</h1>
-        </v-window-item>
-        <v-window-item value="pages" class="fill-height d-flex justify-center align-center">
-            <h1 class="text-grey">Contenido de Pages</h1>
-        </v-window-item>
-      </v-window>
-    </div>
+      </div>
 
     <v-btn icon class="timeline-toggle" @click="toggleTimelinePanel">
       <v-icon>{{ timelineDrawer ? 'mdi-chevron-right' : 'mdi-chevron-left' }}</v-icon>
     </v-btn>
-
     <v-btn icon class="chat-toggle" @click="toggleChatPanel">
       <v-icon>{{ chatDrawer ? 'mdi-chevron-right' : 'mdi-message-text' }}</v-icon>
     </v-btn>
 
     <div class="side-panel timeline-panel" :class="{ open: timelineDrawer }">
-      <v-container>
-        <h2 class="text-h6">Timeline</h2>
-        <v-timeline side="end" density="compact">
-          <v-timeline-item
-            v-for="event in events"
-            :key="event.id"
-            :dot-color="event.color"
-            :icon="event.icon"
-            fill-dot
-            size="small"
-          >
-            <template #opposite>
-              <span class="font-weight-bold">{{ event.title }}</span>
-              <div class="text-caption">{{ event.date }}</div>
-            </template>
-            <div>
-              <p class="mb-0">{{ event.description }}</p>
-            </div>
-          </v-timeline-item>
-        </v-timeline>
-      </v-container>
-    </div>
+      </div>
 
     <div class="side-panel chat-panel" :class="{ open: chatDrawer }">
       <div class="chat-in-panel">
         <header class="chat-header-panel">
-          <h2 class="chat-title-panel">Chat with Alex Harris</h2>
+          <h2 class="chat-title-panel">Conversaciones</h2>
         </header>
-        <div class="messages-list-panel" ref="messagesListRef">
+        
+        <div v-if="isLoading" class="d-flex justify-center align-center fill-height">
+          <v-progress-circular indeterminate color="primary"></v-progress-circular>
+        </div>
+        
+        <div v-else-if="error" class="pa-4">
+          <v-alert type="error">{{ error }}</v-alert>
+        </div>
+
+        <div v-else class="messages-list-panel">
           <MessageComponent
-            v-for="message in threadedMessages"
+            v-for="message in messages"
             :key="message.id"
             :message="message"
             :depth="0"
+            @reply="handlePrepareReply"
           />
         </div>
+
         <div class="message-input-area-panel">
-          </div>
+          <v-chip v-if="replyingTo" class="mb-2" closable @click:close="cancelReply">
+            Respondiendo a: {{ replyingTo.owner.name }}
+          </v-chip>
+          <v-form @submit.prevent="handleSendMessage">
+            <v-text-field
+              id="chat-input"
+              v-model="newMessage"
+              label="Escribe un mensaje..."
+              variant="solo"
+              append-inner-icon="mdi-send"
+              @click:append-inner="handleSendMessage"
+              :loading="isSending"
+              :disabled="isSending"
+              hide-details
+            ></v-text-field>
+          </v-form>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+// ===== IMPORTS =====
 import { ref, onMounted } from 'vue';
-// Importamos los componentes y datos necesarios para los paneles
+import api from '@/services/api';
 import MessageComponent from '@/components/MessageComponent.vue';
-import testMessages from '@/data/messages.json';
 
-// --- Lógica del Dashboard (Existente) ---
+// ===== ESTADO DEL COMPONENTE =====
+
+const TEMP_PROCESS_ID = 101; // <-- 
+
+
 const tab = ref('posts');
 
-// --- Lógica de los Paneles Laterales (Añadida y convertida a Composition API) ---
+
 const timelineDrawer = ref(false);
 const chatDrawer = ref(false);
 
+const messages = ref([]);
+const isLoading = ref(true);
+const error = ref(null);
+
+const newMessage = ref('');
+const isSending = ref(false);
+const replyingTo = ref(null);
+
 const events = ref([
-  { id: 1, date: '2023-01-01', title: 'Started Project', description: 'Kicked off the project.', icon: 'mdi-rocket', color: 'primary' },
-  { id: 2, date: '2023-02-15', title: 'Design Complete', description: 'Finished design phase.', icon: 'mdi-pencil', color: 'success' },
-  { id: 3, date: '2023-03-10', title: 'First Release', description: 'Released MVP.', icon: 'mdi-star', color: 'warning' },
+  { id: 1, date: '2023-01-01', title: 'Started Project', description: 'Kicked off.', icon: 'mdi-rocket', color: 'primary' },
 ]);
 
-const threadedMessages = ref([]);
-const messagesListRef = ref(null); // Para hacer scroll al final
+
+// ===== FUNCIONES =====
+
+
+// 2. LA FUNCIÓN QUE OBTIENE LOS DATOS Y USA LA TRANSFORMACIÓN
+async function fetchMessages() {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const response = await api.getMessages(TEMP_PROCESS_ID);
+    
+    // Asignamos directamente los datos anidados que vienen de la API
+    messages.value = response.data;
+
+    // Un log para confirmar que todo llega bien
+    console.log("Datos ANIDADOS recibidos de la API:", messages.value);
+
+  } catch (err) {
+    console.error("Error al obtener mensajes:", err);
+    error.value = "No se pudieron cargar las conversaciones.";
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function handleSendMessage() {
+  if (!newMessage.value.trim()) return;
+  isSending.value = true;
+  try {
+    const payload = { content: newMessage.value };
+    
+    if (replyingTo.value) {
+      await api.replyToMessage(replyingTo.value.id, payload);
+    } else {
+      await api.createMessage(payload, TEMP_PROCESS_ID);
+    }
+    newMessage.value = '';
+    replyingTo.value = null;
+    await fetchMessages();
+  } catch (err) {
+    console.error("Error al enviar el mensaje:", err);
+    alert("Hubo un error al enviar tu mensaje.");
+  } finally {
+    isSending.value = false;
+  }
+}
+
+
+function handlePrepareReply(message) {
+  replyingTo.value = message;
+}
+
+function cancelReply() {
+  replyingTo.value = null;
+}
 
 function toggleTimelinePanel() {
   timelineDrawer.value = !timelineDrawer.value;
-  if (timelineDrawer.value) {
-    chatDrawer.value = false;
-  }
+  if (timelineDrawer.value) { chatDrawer.value = false; }
 }
 
 function toggleChatPanel() {
   chatDrawer.value = !chatDrawer.value;
-  if (chatDrawer.value) {
-    timelineDrawer.value = false;
-  }
+  if (chatDrawer.value) { timelineDrawer.value = false; }
 }
 
-function loadTestMessages() {
-  const clonedMessages = JSON.parse(JSON.stringify(testMessages));
-  threadedMessages.value = clonedMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-}
-
-// onMounted es el equivalente a 'mounted' en Composition API
 onMounted(() => {
-  loadTestMessages();
+  fetchMessages();
 });
 </script>
 
 <style scoped>
-/* Estilo del contenido principal del dashboard (Existente) */
-.main-content-area {
-  background-color: #121212;
-}
-
-/* Estilos para los paneles laterales (Añadidos) */
-.side-panel {
-  position: fixed;
-  top: 0;
-  height: 100%;
-  width: 50vw;
-  max-width: 700px;
-  min-width: 400px;
-  background-color: #fff;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
-  z-index: 1005; /* Debe ser mayor que el de v-navigation-drawer */
-  transition: right 0.3s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  right: -100%; 
-}
-.side-panel.open {
-  right: 0;
-}
-
-.timeline-toggle, .chat-toggle {
-  position: fixed;
-  right: 16px;
-  z-index: 1006;
-  background-color: white;
-  transform: translateY(-50%);
-}
-.timeline-toggle {
-  top: 45%;
-}
-.chat-toggle {
-  top: 55%; 
-}
-
-/* Estilos del chat */
+.main-content-area { background-color: #121212; }
+.side-panel { position: fixed; top: 0; height: 100%; width: 50vw; max-width: 700px; min-width: 400px; background-color: #fff; box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2); z-index: 1005; transition: right 0.3s ease-in-out; display: flex; flex-direction: column; right: -100%; }
+.side-panel.open { right: 0; }
+.timeline-toggle, .chat-toggle { position: fixed; right: 16px; z-index: 1006; background-color: white; transform: translateY(-50%); }
+.timeline-toggle { top: 45%; }
+.chat-toggle { top: 55%; }
 .chat-in-panel { display: flex; flex-direction: column; height: 100%;}
 .chat-header-panel { padding: 15px 25px; border-bottom: 1px solid #eee; flex-shrink: 0; }
 .chat-title-panel { margin: 0; }

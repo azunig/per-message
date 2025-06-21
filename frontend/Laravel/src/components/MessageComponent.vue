@@ -1,52 +1,72 @@
 <template>
-  <div class="message-item" :style="{ 'margin-left': (depth * 20) + 'px' }">
-    <div class="message-content">
-      <p><strong>{{ message.user.name }}:</strong> {{ message.content }}</p>
-      <v-btn size="x-small" variant="text" @click="$emit('reply', message.id)">
-        Reply
-      </v-btn>
-    </div>
-    
-    <div v-if="message.replies && message.replies.length > 0" class="replies">
-      <message-component
-        v-for="reply in message.replies"
+  <div :style="{ 'margin-left': (depth * 25) + 'px' }" class="message-wrapper">
+    <v-card variant="text" class="message-item">
+      <v-card-item>
+        <template #prepend>
+          <v-avatar>
+            <v-img 
+              :src="`https://i.pravatar.cc/40?u=${message.owner.name}`" 
+              :alt="message.owner.name">
+            </v-img>
+          </v-avatar>
+        </template>
+        
+        <v-card-title class="font-weight-bold pa-0">{{ message.owner.name }}</v-card-title>
+        <v-card-subtitle class="pa-0">{{ new Date(message.created_at).toLocaleString() }}</v-card-subtitle>
+      </v-card-item>
+
+      <v-card-text class="py-2">
+        {{ message.message }}
+      </v-card-text>
+
+      <v-card-actions>
+        <v-btn size="small" variant="text" @click="emitReply">Responder</v-btn>
+      </v-card-actions>
+    </v-card>
+
+    <div v-if="message.children && message.children.length > 0" class="replies">
+
+      <MessageComponent
+        v-for="reply in message.children" 
         :key="reply.id"
         :message="reply"
         :depth="depth + 1"
-        @reply="$emit('reply', $event)"
+        @reply="reEmitReply"
       />
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'MessageComponent', // El 'name' es crucial para la recursión
-  props: {
+<script setup>
+  const props = defineProps({
     message: {
       type: Object,
       required: true
     },
-    // Añadimos la propiedad 'depth'
     depth: {
       type: Number,
       required: true
     }
-  },
-  emits: ['reply'] // Buena práctica declarar los eventos que se emiten
-}
+  });
+
+  const emit = defineEmits(['reply']);
+
+  function emitReply() {
+    emit('reply', props.message);
+  }
+  
+  function reEmitReply(messageFromChild) {
+    emit('reply', messageFromChild);
+  }
 </script>
 
 <style scoped>
-.message-item {
-  margin-top: 10px;
-  border-left: 2px solid transparent;
-}
-.message-content {
-  padding-left: 10px;
+.message-wrapper {
+  margin-top: 16px;
 }
 .replies {
-  margin-top: 10px;
   border-left: 2px solid #e0e0e0;
+  padding-left: 10px;
+  margin-top: 10px;
 }
 </style>
