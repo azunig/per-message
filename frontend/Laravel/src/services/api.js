@@ -27,7 +27,6 @@ apiClient.interceptors.request.use(config => {
   return Promise.reject(error);
 });
 
-
 // funciones para llamar a endpoints protegidos
 export default {
   login(credentials) {
@@ -39,17 +38,23 @@ export default {
   getMessages(processId) {
     return apiClient.get(`/api/py/processes/${processId}/thread/`); // todos los mensajes
   },
+
   createMessage(payload, processId) {
     console.log("(payload) Ejecutando createMessage con el payload:", payload);
 
     const dataToSend = {  
       message: payload.content,
-      process_id: processId 
+      process_id: processId,
+      // 👇 AÑADE ESTA LÍNEA PARA ENVIAR EL ID DEL MENSAJE PADRE 👇
+      // Si payload.replyingToId existe, se envía. Si no, se envía null.
+      parent_id: payload.replyingToId || null 
     };
 
+    
     console.log("(dataToSend) Ejecutando createMessage con el payload:", dataToSend);
     return apiClient.post('/api/py/messages/', dataToSend); // Crea un mensaje nuevo
   },
+
   replyToMessage(messageId, payload) {
     console.log(`(payload) Ejecutando replyToMessage para el ID ${messageId} con el payload:`, payload);
 
@@ -57,6 +62,13 @@ export default {
 
     console.log(`(dataToSend) Ejecutando replyToMessage para el ID ${messageId} con el payload:`, dataToSend);
     return apiClient.post(`/api/py/messages/${messageId}/reply`, dataToSend); // Responde a un mensaje
+  },
+
+  // revisar como agregalo a bpm
+  getCustomers() {
+     console.log(`(payload) Ejecutando getCustomers`);
+
+    return apiClient.get('https://jsonplaceholder.typicode.com/users');
   }
   // ... otras API o no? 
 };

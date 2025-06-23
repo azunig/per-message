@@ -1,0 +1,106 @@
+[
+  {
+    "id": 101,
+    "name": "Leanne Graham",
+    "email": "Sincere@april.biz",
+    "phone": "1-770-736-8031 x56442",
+    "company": {
+      "name": "Romaguera-Crona"
+    },
+    "address": {
+      "city": "Gwenborough"
+    },
+    "status": "Activo"
+  },
+  {
+    "id": 102,
+    "name": "Ervin Howell",
+    "email": "Shanna@melissa.tv",
+    "phone": "010-692-6593 x09125",
+    "company": {
+      "name": "Deckow-Crist"
+    },
+    "address": {
+      "city": "Wisokyburgh"
+    },
+    "status": "Inactivo"
+  },
+  {
+    "id": 103,
+    "name": "Clementine Bauch",
+    "email": "Nathan@yesenia.net",
+    "phone": "1-463-123-4447",
+    "company": {
+      "name": "Romaguera-Jacobson"
+    },
+    "address": {
+      "city": "McKenziehaven"
+    },
+    "status": "Activo"
+  },
+  {
+    "id": 104,
+    "name": "Patricia Lebsack",
+    "email": "Julianne.OConner@kory.org",
+    "phone": "493-170-9623 x156",
+    "company": {
+      "name": "Robel-Corkery"
+    },
+    "address": {
+      "city": "South Elvis"
+    },
+    "status": "Activo"
+  },
+  {
+    "id": 105,
+    "name": "Chelsey Dietrich",
+    "email": "Lucio_Hettinger@annie.ca",
+    "phone": "(254)954-1289",
+    "company": {
+      "name": "Keebler LLC"
+    },
+    "address": {
+      "city": "South Christy"
+    },
+    "status": "Inactivo"
+  },
+  {
+    "id": 106,
+    "name": "Mrs. Dennis Schulist",
+    "email": "Karley_Dach@jasper.info",
+    "phone": "1-477-935-8478 x6430",
+    "company": {
+      "name": "Considine-Lockman"
+    },
+    "address": {
+      "city": "Runolfstead"
+    },
+    "status": "Activo"
+  },
+  {
+    "id": 107,
+    "name": "Kurtis Weissnat",
+    "email": "Telly.Hoeger@billy.biz",
+    "phone": "210.067.6132",
+    "company": {
+      "name": "Johns Group"
+    },
+    "address": {
+      "city": "Howemouth"
+    },
+    "status": "Activo"
+  },
+  {
+    "id": 108,
+    "name": "Nicholas Runolfsdottir V",
+    "email": "Sherwood@rosamond.me",
+    "phone": "586.493.6943 x140",
+    "company": {
+      "name": "Abernathy Group"
+    },
+    "address": {
+      "city": "Aliyaview"
+    },
+    "status": "Inactivo"
+  }
+]

@@ -11,7 +11,7 @@
           Selecciona uno de los prototipos a continuación para navegar a la página correspondiente.
         </p>
         <v-divider></v-divider>
-        <v-list lines="two">
+        <v-list lines="three">
           <v-list-item
             :to="{ name: 'Profile' }"
             prepend-icon="mdi-account-box-outline"
@@ -28,6 +28,15 @@
           >
             <v-list-item-title class="font-weight-bold">Prototipo de Dashboard</v-list-item-title>
             <v-list-item-subtitle>Layout con panel de navegación lateral fijo.</v-list-item-subtitle>
+          </v-list-item>
+          
+          <v-list-item
+            :to="{ name: 'Customers' }"
+            prepend-icon="mdi-view-dashboard-outline"
+            rounded="lg"
+          >
+            <v-list-item-title class="font-weight-bold">Prototipo de Customers</v-list-item-title>
+            <v-list-item-subtitle>Layout de grilla.</v-list-item-subtitle>
           </v-list-item>
         </v-list>
       </v-card-text>

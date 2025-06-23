@@ -1,15 +1,14 @@
-# auth.py
-
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-import os
 from dotenv import load_dotenv
 
-# Importamos nuestros propios módulos
+import os
+
+# módulos
 import models
 import schemas
 import database
@@ -25,14 +24,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 # 1. Contexto para el hashing de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# 2. Esquema de seguridad de FastAPI
-# Le decimos que la URL para obtener el token es '/api/py/token'
+# 2. Esquema de seguridad de FastAPI (URL para obtener el token es '/api/py/token')
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/py/token")
 
 
 # --- FUNCIONES AUXILIARES DE AUTENTICACIÓN ---
-
-# Función para verificar que una contraseña en texto plano coincide con su hash
+# Función para verificar contraseña en texto plano coincide con su hash
 def verify_password(plain_password, password):
     return pwd_context.verify(plain_password, password)
 
@@ -48,17 +45,18 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# --- FUNCIÓN DE DEPENDENCIA PARA PROTEGER RUTAS ---
 
+
+# --- FUNCIÓN DE DEPENDENCIA PARA PROTEGER RUTAS ---
 # Función para obtener un usuario de la BD por su email
 def get_user(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
 # Esta es la dependencia principal de seguridad.
-# Se encargará de validar el token y devolver el usuario autenticado.
+# validar el token y devolver el usuario autenticado.
 async def get_current_user(request: Request, token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     # Define la excepción que se lanzará si el token no es válido
-        # --- AÑADE ESTAS LÍNEAS PARA DEPURAR ---
+    # --- LÍNEAS PARA DEPURAR ---
     #print("--- DEBUGGING AUTH ---")
     #print("Cabeceras recibidas:", request.headers)
     #print("Token extraído por FastAPI:", token)
@@ -83,5 +81,5 @@ async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)
     if user is None:
         raise credentials_exception
         
-    # Si todo está bien, devuelve el objeto del usuario
+    # Si todo ok, devuelve el objeto del usuario
     return user

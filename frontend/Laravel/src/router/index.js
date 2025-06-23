@@ -5,12 +5,16 @@ import IndexView from '../views/IndexView.vue';
 import ProfileView from '../views/ProfileView.vue';
 import DashboardView from '../views/DashboardView.vue';
 import LoginView from '../views/LoginView.vue';
+import CustomersView from '../views/CustomersView.vue';
+import TestPanelView from '../views/TestPanelView.vue';
 
 const routes = [
   { path: '/', name: 'Index', component: IndexView  },
   { path: '/profile', name: 'Profile', component: ProfileView },
   { path: '/dashboard', name: 'Dashboard', component: DashboardView },
+  { path: '/customers', name: 'Customers', component: CustomersView },
   { path: '/login', name: 'Login', component: LoginView },
+  { path: '/test-panel', name: 'TestPanel', component: TestPanelView },
 ];
 
 

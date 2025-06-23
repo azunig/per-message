@@ -25,57 +25,14 @@
     <v-btn icon class="timeline-toggle" @click="toggleTimelinePanel">
       <v-icon>{{ timelineDrawer ? 'mdi-chevron-right' : 'mdi-chevron-left' }}</v-icon>
     </v-btn>
-    <v-btn icon class="chat-toggle" @click="toggleChatPanel">
-      <v-icon>{{ chatDrawer ? 'mdi-chevron-right' : 'mdi-message-text' }}</v-icon>
+    <v-btn @click="chatStore.openChat(101)">
+      Abrir Chat del Proceso 101
     </v-btn>
 
     <div class="side-panel timeline-panel" :class="{ open: timelineDrawer }">
       </div>
 
-    <div class="side-panel chat-panel" :class="{ open: chatDrawer }">
-      <div class="chat-in-panel">
-        <header class="chat-header-panel">
-          <h2 class="chat-title-panel">Conversaciones</h2>
-        </header>
-        
-        <div v-if="isLoading" class="d-flex justify-center align-center fill-height">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
-        </div>
-        
-        <div v-else-if="error" class="pa-4">
-          <v-alert type="error">{{ error }}</v-alert>
-        </div>
 
-        <div v-else class="messages-list-panel">
-          <MessageComponent
-            v-for="message in messages"
-            :key="message.id"
-            :message="message"
-            :depth="0"
-            @reply="handlePrepareReply"
-          />
-        </div>
-
-        <div class="message-input-area-panel">
-          <v-chip v-if="replyingTo" class="mb-2" closable @click:close="cancelReply">
-            Respondiendo a: {{ replyingTo.owner.name }}
-          </v-chip>
-          <v-form @submit.prevent="handleSendMessage">
-            <v-text-field
-              id="chat-input"
-              v-model="newMessage"
-              label="Escribe un mensaje..."
-              variant="solo"
-              append-inner-icon="mdi-send"
-              @click:append-inner="handleSendMessage"
-              :loading="isSending"
-              :disabled="isSending"
-              hide-details
-            ></v-text-field>
-          </v-form>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -83,26 +40,26 @@
 // ===== IMPORTS =====
 import { ref, onMounted } from 'vue';
 import api from '@/services/api';
-import MessageComponent from '@/components/MessageComponent.vue';
+// import MessageComponent from '@/components/MessageComponent.vue';
+
+import { useChatStore } from '@/stores/chatStore';
+const chatStore = useChatStore();
 
 // ===== ESTADO DEL COMPONENTE =====
-
 const TEMP_PROCESS_ID = 101; // <-- 
 
-
 const tab = ref('posts');
-
 
 const timelineDrawer = ref(false);
 const chatDrawer = ref(false);
 
-const messages = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
+// const messages = ref([]);
+// const isLoading = ref(true);
+// const error = ref(null);
 
-const newMessage = ref('');
+// const newMessage = ref('');
 const isSending = ref(false);
-const replyingTo = ref(null);
+// const replyingTo = ref(null);
 
 const events = ref([
   { id: 1, date: '2023-01-01', title: 'Started Project', description: 'Kicked off.', icon: 'mdi-rocket', color: 'primary' },
@@ -111,9 +68,8 @@ const events = ref([
 
 // ===== FUNCIONES =====
 
-
 // 2. LA FUNCIÓN QUE OBTIENE LOS DATOS Y USA LA TRANSFORMACIÓN
-async function fetchMessages() {
+/* async function fetchMessages() {
   isLoading.value = true;
   error.value = null;
   try {
@@ -131,9 +87,9 @@ async function fetchMessages() {
   } finally {
     isLoading.value = false;
   }
-}
+} */
 
-async function handleSendMessage() {
+/* async function handleSendMessage() {
   if (!newMessage.value.trim()) return;
   isSending.value = true;
   try {
@@ -153,16 +109,16 @@ async function handleSendMessage() {
   } finally {
     isSending.value = false;
   }
-}
+} */
 
 
-function handlePrepareReply(message) {
+/* function handlePrepareReply(message) {
   replyingTo.value = message;
-}
+} */
 
-function cancelReply() {
+/* function cancelReply() {
   replyingTo.value = null;
-}
+} */
 
 function toggleTimelinePanel() {
   timelineDrawer.value = !timelineDrawer.value;
