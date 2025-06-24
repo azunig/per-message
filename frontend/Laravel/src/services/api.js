@@ -39,20 +39,22 @@ export default {
     return apiClient.get(`/api/py/processes/${processId}/thread/`); // todos los mensajes
   },
 
-  createMessage(payload, processId) {
-    console.log("(payload) Ejecutando createMessage con el payload:", payload);
+  async createMessage(payload, processId) {
+    // console.log("(payload) Ejecutando createMessage con el payload:", payload);
 
     const dataToSend = {  
       message: payload.content,
       process_id: processId,
-      // 👇 AÑADE ESTA LÍNEA PARA ENVIAR EL ID DEL MENSAJE PADRE 👇
-      // Si payload.replyingToId existe, se envía. Si no, se envía null.
       parent_id: payload.replyingToId || null 
     };
 
     
     console.log("(dataToSend) Ejecutando createMessage con el payload:", dataToSend);
-    return apiClient.post('/api/py/messages/', dataToSend); // Crea un mensaje nuevo
+    const response = await apiClient.post('/api/py/messages/', dataToSend);
+
+    //return apiClient.post('/api/py/messages/', dataToSend); 
+    return response.data || null;
+    
   },
 
   replyToMessage(messageId, payload) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="message-thread" :class="{ 'is-current-user-thread': isCurrentUser }">
+  <div class="message-thread" :id="`message-${message.id}`"  :class="{ 'is-current-user-thread': isCurrentUser }">
     <div class="message-bubble" :class="{ 'current-user-bubble': isCurrentUser, 
     'other-user-bubble': !isCurrentUser }">
       <p v-if="!isCurrentUser" class="font-weight-bold author-name mb-1">

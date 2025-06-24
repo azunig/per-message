@@ -16,24 +16,31 @@ export const useChatStore = defineStore('chat', {
     if (!this.processId) {
       console.error("No se puede enviar un mensaje: no hay un processId activo.");
       this.error = "Error: No se ha seleccionado ninguna conversación.";
-      return;
+      return null;
     }
     
     this.error = null;
 
-    try {
-      // 👇 ESTA ES LA LÍNEA QUE CAMBIA 👇
-      // Llamamos a la función de la API con los dos argumentos que espera:
-      // 1. El objeto con el contenido (messageData)
-      // 2. El ID del proceso (this.processId)
-      await api.createMessage(messageData, this.processId);
+    try {       // API :      
+      const createdMessage = await api.createMessage(messageData,this.processId);
 
-      // Al tener éxito, refrescamos los mensajes para ver el nuevo
-      await this.fetchMessages();
+      if (!createdMessage || !createdMessage.id) {
+        throw new Error("La API no devolvió un objeto de mensaje válido tras la creación.");
+      }  //await this.fetchMessages();
+      
+      createdMessage.children = createdMessage.children || [];
+      if (createdMessage.parent_id) {
+        this.addMessageToThread(createdMessage, this.messages);
+      } else {
+        this.messages.push(createdMessage);
+      }
+
+      return createdMessage;
       
     } catch (err) {
       console.error("Error al enviar el mensaje:", err);
       this.error = "No se pudo enviar el mensaje. Inténtalo de nuevo.";
+      return null;
     }
   },
 
@@ -44,7 +51,7 @@ export const useChatStore = defineStore('chat', {
       return;
     }
     
-    console.log(`Tienda Pinia: Abriendo chat para el proceso ID ${processId}`);
+    console.log(`Store Pinia: Abriendo chat para el proceso ID ${processId}`);
     
     // Guardamos el estado
     this.isPanelOpen = true;
@@ -63,25 +70,22 @@ export const useChatStore = defineStore('chat', {
     }, 300);
   },
 
-    async fetchMessages() {
-      if (!this.processId) return;
-      this.isLoading = true;
-      this.error = null;
-      try {
-        const response = await api.getMessages(this.processId);
-        console.log(`Respuesta de la API (ya anidada) para el proceso ID ${this.processId}:`, response.data);
-        
-        // ANTES: this.messages = this.buildThreadedMessages(response.data);
-        // AHORA: Simplemente asignamos los datos directamente. ¡Listo!
-        this.messages = response.data;
+  async fetchMessages() {
+    if (!this.processId) return;
+    this.isLoading = true;
+    this.error = null;
+    try {
+      const response = await api.getMessages(this.processId);
+      console.log(`Respuesta de la API (ya anidada) para el proceso ID ${this.processId}:`, response.data);
+      this.messages = response.data;
 
-      } catch (err) {
-        console.error("Error al obtener mensajes:", err);
-        this.error = "No se pudieron cargar las conversaciones.";
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    } catch (err) {
+      console.error("Error al obtener mensajes:", err);
+      this.error = "No se pudieron cargar las conversaciones.";
+    } finally {
+      this.isLoading = false;
+    }
+  },
  /* 
 buildThreadedMessages(messagesList) {
     const messageMap = {};
@@ -105,6 +109,23 @@ buildThreadedMessages(messagesList) {
     return threadedMessages;
   }
 */
-
+  addMessageToThread(newMessage, thread) {
+    for (const message of thread) {
+      // Si encontramos el mensaje padre, añadimos el nuevo mensaje a sus hijos
+      if (message.id === newMessage.parent_id) {
+        if (!message.children) {
+          message.children = [];
+        }
+        message.children.push(newMessage);
+        return true; // Éxito, terminamos la búsqueda
+      }
+      // Si no es el padre, buscamos recursivamente en los hijos de este mensaje
+      if (message.children && message.children.length > 0) {
+        const found = this.addMessageToThread(newMessage, message.children);
+        if (found) return true; // Si se encontró en una rama anidada, terminamos
+      }
+    }
+    return false; // No se encontró en este hilo
+  },
   },
 });

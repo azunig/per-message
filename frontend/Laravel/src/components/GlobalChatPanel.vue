@@ -17,10 +17,28 @@
       <div class="chat-in-panel" v-if="chatStore.processId">
         
         <header class="chat-header-panel">
-          <h2 class="chat-title-panel">Conversación Proceso #{{ chatStore.processId }}</h2>
-          <v-btn icon="mdi-close" variant="text" @click="chatStore.closeChat()"></v-btn>
+          <div class="chat-title-bubble">
+            <h2 class="chat-title-panel-text">
+              Conversación Proceso #{{ chatStore.processId }}
+            </h2>
+          </div>  
+          <v-btn 
+            icon="mdi-close" 
+            variant="text" 
+            @click="chatStore.closeChat()"
+            class="chat-close-btn"
+          ></v-btn>
+       
+          
         </header>
+        <div class="chat-explanation-area">
+          <p class="mb-0">
+            Este es tu espacio de colaboración. Responde a los mensajes, añade comentarios y mantén toda la comunicación del proceso en un solo lugar.
+          </p>
+        </div>
 
+        <div class="messages-list-container" ref="messageContainerRef">
+          </div>
         <div class="messages-list-container">
           <div v-if="chatStore.isLoading" class="d-flex justify-center align-center fill-height">
             <v-progress-circular indeterminate color="primary"></v-progress-circular>
@@ -84,27 +102,22 @@
 </template>
 
 <script setup>
-// 1. IMPORTACIONES CORREGIDAS Y COMPLETAS
+// IMPORTACIONES CORREGIDAS Y COMPLETAS
 import { ref, watch, nextTick, computed } from 'vue'; // Añadimos 'computed'
 import ChatMessage from './ChatMessage.vue';
 import { useChatStore } from '@/stores/chatStore';
 import { useAuthStore } from '@/stores/auth'; // <-- CORRECCIÓN DE RUTA
 
-// 2. STORES
+//  STORES // REFERENCIAS Y ESTADO LOCAL
 const chatStore = useChatStore();
 const authStore = useAuthStore();
-
-// 3. REFERENCIAS Y ESTADO LOCAL
 const messageContainerRef = ref(null);
 const newMessage = ref('');
 const isSending = ref(false);
 const replyingTo = ref(null);
-
-// 4. PROPIEDAD COMPUTADA (LA MEJORA CRUCIAL)
-// Esto es más seguro. currentUserId solo tendrá un valor cuando authStore.user exista.
 const currentUserId = computed(() => authStore.user?.id);
 
-// 5. FUNCIONES (SIN CAMBIOS)
+// FUNCIONES
 const scrollToBottom = () => {
   nextTick(() => {
     const container = messageContainerRef.value;
@@ -114,7 +127,29 @@ const scrollToBottom = () => {
   });
 };
 
-watch(() => chatStore.messages, scrollToBottom, { deep: true });
+const scrollToMessage = (messageId) => {
+  nextTick(() => {
+    const messageElement = document.getElementById(`message-${messageId}`);
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+};
+
+//watch(() => chatStore.messages, scrollToBottom, { deep: true });
+
+watch(
+  () => chatStore.messages,
+  (newMessages, oldMessages) => {
+    if (oldMessages.length === 0 && newMessages.length > 0) {
+      nextTick(() => {
+        const container = messageContainerRef.value; // Corregido: usa R mayúscula
+        if (container) container.scrollTop = container.scrollHeight;
+      });
+    }
+  },
+  { deep: true }
+);
 
 function handleReply(message) {
   replyingTo.value = message;
@@ -127,23 +162,70 @@ function cancelReply() {
 async function handleSendMessage() {
   if (!newMessage.value.trim()) return;
   isSending.value = true;
-  await chatStore.sendMessage({
+  
+  // La variable 'createdMessage' se declara aquí y recibe el resultado del store
+  const createdMessage = await chatStore.sendMessage({
     content: newMessage.value,
     replyingToId: replyingTo.value ? replyingTo.value.id : null,
   });
+
   isSending.value = false;
   newMessage.value = '';
   replyingTo.value = null;
+
+  // El 'if' ahora funciona porque 'createdMessage' existe (incluso si es undefined)
+  if (createdMessage) {
+    scrollToMessage(createdMessage.id);
+  }
 }
 
 // Suponiendo que tienes esta función para el botón flotante
 function handleToggleChat() {
-  // Lógica para abrir/cerrar el chat si la tienes aquí
-  // Por ejemplo: chatStore.isPanelOpen ? chatStore.closeChat() : chatStore.openChat(unIdPorDefecto);
+  // Lógica para abrir/cerrar el chat 
+  // chatStore.isPanelOpen ? chatStore.closeChat() : chatStore.openChat(unIdPorDefecto);
 }
 </script>
 
 <style scoped>
+
+/* ============================================= */
+/* VARIABLES DE TEMA PARA EL CHAT         */
+/*  modificar todo el panel. */
+/* ============================================= */
+.chat-panel {
+  --chat-bg-color: #f7f9fa; /* Fondo del área de mensajes */
+  --chat-input-bg-color: #ffffff; /* Fondo del área de input */
+  --chat-header-bg-color: #ffffff; /* Fondo del encabezado */
+  --chat-explanation-bg-color: #f7f9fa; /* Fondo del texto explicativo */
+  --chat-border-color: #e9edf0; /* Color de los bordes sutiles */
+  --chat-title-bubble-bg-color: #e7f3ff; /* Burbuja del título */
+  --chat-title-text-color: #005a9e; /* Texto del título */
+}
+
+/* ============================================= */
+/* ESTILOS DEL LAYOUT                */
+/* ============================================= */
+.chat-in-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--chat-bg-color); /* Usando variable */
+}
+
+/* Encabezado */
+.chat-header-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 8px 12px 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--chat-border-color); /* Usando variable */
+  background-color: var(--chat-header-bg-color); /* Usando variable */
+}
+
+
+
 .side-panel {
   position: fixed;
   top: 0;
@@ -199,10 +281,13 @@ function handleToggleChat() {
 .message-content {
   flex-grow: 1;
 }
+/* Lista de mensajes */
 .messages-list-container {
-  flex-grow: 1; /* Hace que este elemento crezca y ocupe el espacio sobrante */
-  overflow-y: auto; /* AÑADE EL SCROLL VERTICAL SOLO A ESTA ÁREA */
-  padding: 16px; /* Añadimos un poco de espacio interior */
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
 }
 .replies-container {
   /* ESTAS LÍNEAS CREAN EL HILO VISUAL */
@@ -211,11 +296,12 @@ function handleToggleChat() {
   border-left: 2px solid #e0e0e0; /* La línea vertical del hilo */
   padding-left: 15px;
 }
+/* Área de input */
 .message-input-area-panel {
-  flex-shrink: 0; /* Evita que el área de input se encoja */
-  padding: 16px;
-  background-color: #ffffff;
-  border-top: 1px solid #e0e0e0;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background-color: var(--chat-input-bg-color); /* Usando variable */
+  border-top: 1px solid var(--chat-border-color); /* Usando variable */
 }
 .reply-link {
   color: #888;
@@ -229,16 +315,53 @@ function handleToggleChat() {
   color: #333;
 }
 .replying-to-banner {
-  background-color: #f0f0f0;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 0.9em;
-  margin-bottom: 5px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  background-color: transparent;
+  padding: 4px 4px 4px 12px;
+  border-left: 3px solid #007bff;
+  margin-bottom: 8px;
 }
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Encabezado del chat 
+.chat-header-panel {
+  display: flex; 
+  justify-content: space-between;  
+  align-items: center; 
+  padding: 12px 8px 12px 16px; 
+  flex-shrink: 0; 
+  border-bottom: 1px solid #eee; 
+}*/
+
+/* La nueva "burbuja" para el título */
+.chat-title-bubble {
+  background-color: var(--chat-title-bubble-bg-color); /* Usando variable */
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.chat-title-panel-text {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--chat-title-text-color); /* Usando variable */
+}
+
+.chat-close-btn {
+  /* Pequeño ajuste para el botón de cerrar */
+  margin-left: 8px;
+}
+
+.chat-explanation-area {
+  padding: 16px;
+  background-color: var(--chat-explanation-bg-color); /* Usando variable */
+  font-size: 0.875rem;
+  color: #555;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--chat-border-color); /* Usando variable */
 }
 </style>
